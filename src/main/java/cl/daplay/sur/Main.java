@@ -1,32 +1,50 @@
 package cl.daplay.sur;
 
-import cl.daplay.jsurbtc.Constants;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Scanner;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import org.codehaus.groovy.control.CompilerConfiguration;
+
 import cl.daplay.jsurbtc.model.Currency;
 import cl.daplay.jsurbtc.model.balance.BalanceEventType;
 import cl.daplay.jsurbtc.model.market.MarketID;
-import cl.daplay.jsurbtc.model.order.Order;
 import cl.daplay.jsurbtc.model.order.OrderPriceType;
 import cl.daplay.jsurbtc.model.order.OrderState;
 import cl.daplay.jsurbtc.model.order.OrderType;
 import cl.daplay.jsurbtc.model.trades.Direction;
+
 import groovy.lang.GroovyShell;
-import org.codehaus.groovy.control.CompilerConfiguration;
-
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-
 
 public final class Main {
 
-    // - procesar los argumentos a constantes para que no haya que hacer eso en el script
-    // - bajar siempre la ultima version disponible de la libreria
+    private static Predicate<String> isUnsafeOption = (arg) -> {
+        return arg != null && "-U".equals(arg) || "--unsafe".equals("arg");
+    };
 
-    public static void main(final String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {
+        // -- remove options
+        final boolean unsafe = Stream.of(args)
+            .filter(Main.isUnsafeOption)
+            .findFirst()
+            .map(it -> true)
+            .orElse(false);
+
+        if (unsafe) {
+            args = Stream.of(args)
+                .filter(arg -> !arg.equals("--unsafe"))
+                .filter(Main.isUnsafeOption.negate())
+                .toArray(String[]::new);
+        }
+
         // check input
         final InputStream input = args.length >= 1 ? new FileInputStream(args[0]) : System.in;
         if (input.available() == 0) {
@@ -34,11 +52,6 @@ public final class Main {
         }
 
         final String fileName = args.length >= 1 ? args[0] : "inline script";
-
-        try {
-            Class.forName(Order.class.getName());
-        } catch (ClassNotFoundException e) {
-        }
 
         // read input
         final String script = new Scanner(input)
@@ -50,36 +63,39 @@ public final class Main {
         }
 
         // compiler settings
+        //
         final CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
-        compilerConfiguration.setScriptBaseClass(SurScript.class.getName());
+
+        if (unsafe) {
+            compilerConfiguration.setScriptBaseClass(UnsafeSurScript.class.getName());
+        } else {
+            compilerConfiguration.setScriptBaseClass(SurScript.class.getName());
+        }
 
         final GroovyShell shell = new GroovyShell(Main.class.getClassLoader(), compilerConfiguration);
-        // shell.run("import java")
 
-        final Class<Enum>[] enums = new Class[] {
-                ChronoUnit.class,
-                Currency.class,
-                MarketID.class,
-                OrderPriceType.class,
-                BalanceEventType.class,
-                OrderState.class,
-                OrderType.class,
-                Direction.class
-        };
+        final Class<Enum>[] enums = new Class[] { ChronoUnit.class,
+            Currency.class,
+            MarketID.class,
+            OrderPriceType.class,
+            BalanceEventType.class,
+            OrderState.class,
+            OrderType.class,
+            Direction.class };
 
         // populate DSL constants
         Arrays.stream(enums).forEach(it -> loadEnum(shell, it));
 
-        // loadEnums(shell, enums);
-
         // process arguments that look like any of the constants
-        final List<Object> arguments = new ArrayList<>(args.length);
+        final List<String> arguments = new ArrayList<>(args.length);
         for (int i = 1; i < args.length; i++) {
             arguments.add(args[i]);
         }
 
-        // eval the script
+        // eval
         try {
+
+            // shell.evaluate("println is safe: $safeMode");
             shell.run(script, fileName, arguments);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -108,17 +124,5 @@ public final class Main {
             shell.setVariable(e.name(), e);
         }
     }
-
-    //private static <T extends Enum<T>> void loadEnums(GroovyShell shell, Class<T>... more) {
-        //for (Class<T> each : more) {
-            //loadEnum(shell, each)
-        //}
-//
-        //final List<Class<T>> all = new ArrayList<>(1 + more.length);
-        //all.add(first);
-        //all.addAll(Arrays.asList(more));
-//
-        //all.forEach(elementType -> loadEnum(shell, elementType));
-    //}
 
 }

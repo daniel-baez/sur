@@ -1,7 +1,5 @@
 package cl.daplay.sur;
 
-import cl.daplay.jsurbtc.JSurbtc;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -12,14 +10,14 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public enum JSurbtcFactory implements Supplier<JSurbtc> {
-    INSTANCE;
+import cl.daplay.jsurbtc.JSurbtc;
 
-    @Override
-    public JSurbtc get() {
+public class JSurbtcFactory {
+
+    public static JSurbtc newInstance(boolean safeMode) {
         final Stream<Supplier<Optional<JSurbtc>>> strategies = Stream.of(
-                this::newSurbtcFromConfigFile,
-                this::newSurbtcFromEnviroment);
+                JSurbtcFactory::newSurbtcFromConfigFile,
+                JSurbtcFactory::newSurbtcFromEnviroment);
 
         final JSurbtc surbtc = strategies.map(Supplier::get)
             .filter(Optional::isPresent)
@@ -29,10 +27,14 @@ public enum JSurbtcFactory implements Supplier<JSurbtc> {
                 return new IllegalStateException("can't create surbtc client, please refer to documentation");
             });
 
+        if (safeMode) {
+            return new SafeClient(surbtc);
+        }
+
         return surbtc;
     }
 
-    private Optional<JSurbtc> newSurbtcFromConfigFile() {
+    private static Optional<JSurbtc> newSurbtcFromConfigFile() {
         return Optional.of(new File(getEnviromentVariable("user.home")))
                 .filter(homeDir -> homeDir.exists() && homeDir.isDirectory())
                 .map(homeDir -> new File(homeDir, ".sur/"))
@@ -59,7 +61,7 @@ public enum JSurbtcFactory implements Supplier<JSurbtc> {
                 });
     }
 
-    private Optional<JSurbtc> newSurbtcFromEnviroment() {
+    private static Optional<JSurbtc> newSurbtcFromEnviroment() {
         final String key = getEnviromentVariable("SURBTC_KEY");
         final String secret = getEnviromentVariable("SURBTC_SECRET");
 
@@ -69,12 +71,12 @@ public enum JSurbtcFactory implements Supplier<JSurbtc> {
         return newSurbtc(key, secret, proxyHost, proxyPort);
     }
 
-    private String getEnviromentVariable(String name) {
+    private static String getEnviromentVariable(String name) {
         final String env = System.getProperty(name);
         return env == null ? "" : env;
     }
 
-    private Optional<JSurbtc> newSurbtc(String key, String secret, String proxyHost, String proxyPort) {
+    private static Optional<JSurbtc> newSurbtc(String key, String secret, String proxyHost, String proxyPort) {
         if (key.isEmpty() || secret.isEmpty()) {
             return Optional.empty();
         }

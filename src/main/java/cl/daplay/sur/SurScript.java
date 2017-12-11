@@ -1,24 +1,28 @@
 package cl.daplay.sur;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.math.BigDecimal;
 
 import cl.daplay.jsurbtc.JSurbtc;
 import cl.daplay.jsurbtc.model.Amount;
-
 import groovy.lang.Script;
 
 public abstract class SurScript extends Script {
 
-    public final JSurbtc surbtc;
+    private final boolean safeMode;
+    private final JSurbtc surbtc;
 
     public SurScript() {
-        this.surbtc = JSurbtcFactory.INSTANCE.get();
-    }
+        this(true); // safe mode by default
+    } 
 
-    public final JSurbtc getSurbtc() {
+    SurScript(boolean safeMode) {
+        this.safeMode = safeMode;
+        this.surbtc = JSurbtcFactory.newInstance(safeMode);
+    } 
+
+    public JSurbtc getSurbtc() {
         return surbtc;
     }
 
@@ -30,9 +34,9 @@ public abstract class SurScript extends Script {
         return UUID.randomUUID();
     }
 
-    // public String format(String t, Object[] args) {
-    //     return String.format(t, args);
-    // }
+    public boolean isSafeMode() {
+        return safeMode;
+    }
 
     public String format(String t, BigDecimal value) {
         return value.toString();

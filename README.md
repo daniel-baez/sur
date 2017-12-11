@@ -8,6 +8,22 @@ This is a Groovy DSL for Surbtc REST API, once you've configured your key and se
 at `$HOME/.sur/config.properties`, `sur` offers you an scripting environment to build your own
 trading strategies
 
+# Important
+
+Scripts are executed by default on "safe mode", which means that methods:
+
+- `surbtc.newApiKey`
+- `surbtc.newOrder`
+- `surbtc.cancelOrder`
+
+will fail, to run in unsafe mode use option `-U` or `--unsafe`
+
+## Examples
+
+- shebang:  `#!/usr/bin/env sur -U`
+- `sur --unsafe [script.groovy]`
+- `sur -U [script.groovy]`
+
 # HOW AM I USING THIS (for now)
 
 - create file (and directories as needed) `$HOME/.sur/config.properties`
