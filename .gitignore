@@ -6,3 +6,7 @@ out/
 sur.iml
 
 /bin/
+.classpath
+.project
+.settings/
+ 
