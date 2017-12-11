@@ -23,8 +23,8 @@ public class JSurbtcFactory {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .findFirst()
-            .orElseThrow(() -> {
-                return new IllegalStateException("can't create surbtc client, please refer to documentation");
+            .orElseGet(() -> {
+                return new JSurbtc();
             });
 
         if (safeMode) {
@@ -40,7 +40,8 @@ public class JSurbtcFactory {
                 .map(homeDir -> new File(homeDir, ".sur/"))
                 .filter(surHome -> surHome.exists() && surHome.isDirectory())
                 .map(surDir -> new File(surDir, "config.properties"))
-                .filter(surConfig -> surConfig.exists() && surConfig.isFile()).map(file -> {
+                .filter(surConfig -> surConfig.exists() && surConfig.isFile())
+                .map(file -> {
                     final Properties properties = new Properties();
 
                     try {

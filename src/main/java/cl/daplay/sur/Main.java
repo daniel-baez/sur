@@ -40,7 +40,6 @@ public final class Main {
 
         if (unsafe) {
             args = Stream.of(args)
-                .filter(arg -> !arg.equals("--unsafe"))
                 .filter(Main.isUnsafeOption.negate())
                 .toArray(String[]::new);
         }
@@ -94,24 +93,10 @@ public final class Main {
 
         // eval
         try {
-
-            // shell.evaluate("println is safe: $safeMode");
             shell.run(script, fileName, arguments);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-    }
-
-    public static <T extends Enum<T>> Optional<T> parse(String name, Class<T>[] enums) {
-        for (Class<T> e : enums) {
-            try {
-                return Optional.of(Enum.valueOf(e, name));
-            } catch (IllegalArgumentException ex) {
-                return Optional.empty();
-            }
-        }
-
-        return Optional.empty();
     }
 
     private static <T extends Enum<T>> void loadEnum(GroovyShell shell, Class<T> elementType) {

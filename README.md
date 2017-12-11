@@ -8,6 +8,12 @@ This is a Groovy DSL for Surbtc REST API, once you've configured your key and se
 at `$HOME/.sur/config.properties`, `sur` offers you an scripting environment to build your own
 trading strategies
 
+It can also call public endpoint without any configuration, that's why the following works
+
+```bash
+./gradlew -q clean installDist && echo 'surbtc.markets.each { println it  }' | PATH=$PATH:$(pwd)/build/install/sur/bin sur
+```
+
 # Important
 
 Scripts are executed by default on "safe mode", which means that methods:
