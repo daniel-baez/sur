@@ -1,7 +1,6 @@
 package cl.daplay.sur;
 
 import cl.daplay.jsurbtc.JSurbtc;
-import cl.daplay.jsurbtc.JSurbtcImpl;
 
 import java.io.File;
 import java.io.FileReader;
@@ -29,7 +28,6 @@ public enum JSurbtcFactory implements Supplier<JSurbtc> {
             .orElseThrow(() -> {
                 return new IllegalStateException("can't create surbtc client, please refer to documentation");
             });
-            .orElse(null);
 
         return surbtc;
     }
@@ -97,8 +95,6 @@ public enum JSurbtcFactory implements Supplier<JSurbtc> {
             return delegate.getAsLong();
         };
 
-        final JSurbtcImpl surbtc = new JSurbtcImpl(key, secret, nonceSupplier, httpProxy);
-
-        return Optional.of(new JSurbtcImpl(surbtc));
+        return Optional.of(new JSurbtc(key, secret, nonceSupplier, httpProxy));
     }
 }

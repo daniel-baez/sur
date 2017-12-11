@@ -1,3 +1,7 @@
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
+
 buildscript {
     repositories {
         jcenter()
@@ -12,9 +16,6 @@ repositories {
     jcenter()
 }
 
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'com.github.johnrengelman.shadow'
 
 targetCompatibility = '1.8'
 sourceCompatibility = '1.8'

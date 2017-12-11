@@ -12,6 +12,9 @@ import cl.daplay.jsurbtc.model.trades.Direction;
 import groovy.lang.GroovyShell;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +57,7 @@ public final class Main {
         // shell.run("import java")
 
         final Class<Enum>[] enums = new Class[] {
+                ChronoUnit.class,
                 Currency.class,
                 MarketID.class,
                 OrderPriceType.class,
@@ -64,16 +68,9 @@ public final class Main {
         };
 
         // populate DSL constants
-        loadEnums(shell,
-                Currency.class,
-                MarketID.class,
-                OrderPriceType.class,
-                BalanceEventType.class,
-                OrderState.class,
-                OrderType.class,
-                Direction.class);
+        Arrays.stream(enums).forEach(it -> loadEnum(shell, it));
 
-        shell.setVariable("format", Constants.newBigDecimalFormat());
+        // loadEnums(shell, enums);
 
         // process arguments that look like any of the constants
         final List<Object> arguments = new ArrayList<>(args.length);
@@ -112,12 +109,16 @@ public final class Main {
         }
     }
 
-    private static void loadEnums(GroovyShell shell, Class first, Class... more) {
-        final List<Class> all = new ArrayList<>(1 + more.length);
-        all.add(first);
-        all.addAll(Arrays.asList(more));
-
-        all.forEach(elementType -> loadEnum(shell, elementType));
-    }
+    //private static <T extends Enum<T>> void loadEnums(GroovyShell shell, Class<T>... more) {
+        //for (Class<T> each : more) {
+            //loadEnum(shell, each)
+        //}
+//
+        //final List<Class<T>> all = new ArrayList<>(1 + more.length);
+        //all.add(first);
+        //all.addAll(Arrays.asList(more));
+//
+        //all.forEach(elementType -> loadEnum(shell, elementType));
+    //}
 
 }
