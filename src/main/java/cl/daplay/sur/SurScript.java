@@ -10,21 +10,8 @@ import groovy.lang.Script;
 
 public abstract class SurScript extends Script {
 
-    private final boolean safeMode;
-    private final JSurbtc surbtc;
-
     public SurScript() {
-        this(true); // safe mode by default
     } 
-
-    SurScript(boolean safeMode) {
-        this.safeMode = safeMode;
-        this.surbtc = JSurbtcFactory.newInstance(safeMode);
-    } 
-
-    public JSurbtc getSurbtc() {
-        return surbtc;
-    }
 
     public Instant now() {
         return Instant.now();
@@ -34,10 +21,6 @@ public abstract class SurScript extends Script {
         return UUID.randomUUID();
     }
 
-    public boolean isSafeMode() {
-        return safeMode;
-    }
-
     public String format(String t, BigDecimal value) {
         return value.toString();
     }
@@ -45,4 +28,5 @@ public abstract class SurScript extends Script {
     public String format(String t, Amount value) {
         return value.toString();
     }
+
 }

@@ -14,24 +14,16 @@ import cl.daplay.jsurbtc.JSurbtc;
 
 public class JSurbtcFactory {
 
-    public static JSurbtc newInstance(boolean safeMode) {
+    public static JSurbtc newInstance() {
         final Stream<Supplier<Optional<JSurbtc>>> strategies = Stream.of(
                 JSurbtcFactory::newSurbtcFromConfigFile,
                 JSurbtcFactory::newSurbtcFromEnviroment);
 
-        final JSurbtc surbtc = strategies.map(Supplier::get)
+        return strategies.map(Supplier::get)
             .filter(Optional::isPresent)
             .map(Optional::get)
             .findFirst()
-            .orElseGet(() -> {
-                return new JSurbtc();
-            });
-
-        if (safeMode) {
-            return new SafeClient(surbtc);
-        }
-
-        return surbtc;
+            .orElseGet(JSurbtc::new);
     }
 
     private static Optional<JSurbtc> newSurbtcFromConfigFile() {
@@ -100,4 +92,5 @@ public class JSurbtcFactory {
 
         return Optional.of(new JSurbtc(key, secret, nonceSupplier, httpProxy));
     }
+
 }

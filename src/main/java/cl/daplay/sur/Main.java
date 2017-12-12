@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+import cl.daplay.jsurbtc.JSurbtc;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 
@@ -27,7 +28,7 @@ import groovy.lang.GroovyShell;
 public final class Main {
 
     private static Predicate<String> isUnsafeOption = (arg) -> {
-        return arg != null && "-U".equals(arg) || "--unsafe".equals("arg");
+        return arg != null && ("-U".equals(arg) || "--unsafe".equals(arg));
     };
 
     public static void main(String[] args) throws IOException {
@@ -62,16 +63,17 @@ public final class Main {
         }
 
         // compiler settings
-        //
         final CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
-
-        if (unsafe) {
-            compilerConfiguration.setScriptBaseClass(UnsafeSurScript.class.getName());
-        } else {
-            compilerConfiguration.setScriptBaseClass(SurScript.class.getName());
-        }
+        compilerConfiguration.setScriptBaseClass(SurScript.class.getName());
 
         final GroovyShell shell = new GroovyShell(Main.class.getClassLoader(), compilerConfiguration);
+        final JSurbtc surbtc = JSurbtcFactory.newInstance();
+
+        if (unsafe) {
+            shell.setProperty("surbtc", surbtc);
+        } else {
+            shell.setProperty("surbtc", new SafeClient(surbtc));
+        }
 
         final Class<Enum>[] enums = new Class[] { ChronoUnit.class,
             Currency.class,
