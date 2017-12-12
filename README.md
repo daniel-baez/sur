@@ -40,7 +40,7 @@ will fail, to run in unsafe mode use option `-U` or `--unsafe`
         - surbtc.proxy.host={{proxy host}}
         - surbtc.proxy.port={{proxy port}}
 - stand at the dir you clone this repo
-- execute: `./gradlew -q clean installDist && PATH=$PATH:$(pwd)/build/install/sur/bin sur {{your_script.sur}}`
+- execute: `./gradlew -q clean installDist && PATH=$PATH:$(pwd)/build/install/sur/bin sur {{your_script.groovy}}`
 
 There are some example scripts under examples/
 

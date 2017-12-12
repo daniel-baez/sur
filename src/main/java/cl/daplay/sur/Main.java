@@ -7,14 +7,13 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-import cl.daplay.jsurbtc.JSurbtc;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 
+import cl.daplay.jsurbtc.JSurbtc;
 import cl.daplay.jsurbtc.model.Currency;
 import cl.daplay.jsurbtc.model.balance.BalanceEventType;
 import cl.daplay.jsurbtc.model.market.MarketID;
