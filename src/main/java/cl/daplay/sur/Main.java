@@ -12,6 +12,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 import cl.daplay.jsurbtc.JSurbtc;
 import cl.daplay.jsurbtc.model.Currency;
@@ -21,7 +22,7 @@ import cl.daplay.jsurbtc.model.order.OrderPriceType;
 import cl.daplay.jsurbtc.model.order.OrderState;
 import cl.daplay.jsurbtc.model.order.OrderType;
 import cl.daplay.jsurbtc.model.trades.Direction;
-
+import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
 public final class Main {
@@ -61,19 +62,6 @@ public final class Main {
             return;
         }
 
-        // compiler settings
-        final CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
-        compilerConfiguration.setScriptBaseClass(SurScript.class.getName());
-
-        final GroovyShell shell = new GroovyShell(Main.class.getClassLoader(), compilerConfiguration);
-        final JSurbtc surbtc = JSurbtcFactory.newInstance();
-
-        if (unsafe) {
-            shell.setProperty("surbtc", surbtc);
-        } else {
-            shell.setProperty("surbtc", new SafeClient(surbtc));
-        }
-
         final Class<Enum>[] enums = new Class[] { ChronoUnit.class,
             Currency.class,
             MarketID.class,
@@ -83,8 +71,43 @@ public final class Main {
             OrderType.class,
             Direction.class };
 
-        // populate DSL constants
-        Arrays.stream(enums).forEach(it -> loadEnum(shell, it));
+        // customized imports
+        final ImportCustomizer customizer = new ImportCustomizer();
+
+        for (final Class clazz : enums) {
+            for (final Object _member : clazz.getEnumConstants()) {
+                final Enum member = (Enum) _member;
+                customizer.addStaticImport(member.name(), clazz.getName(), member.name());
+            }
+
+            final String fullName = clazz.getName();
+            final String alias = clazz.getSimpleName();
+
+            customizer.addImport(alias, fullName);
+        }
+         
+        // compiler settings
+        final CompilerConfiguration compilerConfiguration = new CompilerConfiguration();
+        // script base class
+        compilerConfiguration.setScriptBaseClass(SurScript.class.getName());
+        compilerConfiguration.addCompilationCustomizers(customizer);
+        
+        final JSurbtc surbtc = JSurbtcFactory.newInstance();
+        final Binding binding = new Binding();
+
+        binding.setProperty("in", System.in);
+        binding.setProperty("out", System.out);
+        binding.setProperty("err", System.err);
+        
+        if (unsafe) {
+            binding.setProperty("surbtc", surbtc);
+        } else {
+            binding.setProperty("surbtc", new SafeClient(surbtc));
+        }
+
+        final GroovyShell shell = new GroovyShell(Main.class.getClassLoader(),
+        		binding,
+        		compilerConfiguration);
 
         // process arguments that look like any of the constants
         final List<String> arguments = new ArrayList<>(args.length);
@@ -97,17 +120,6 @@ public final class Main {
             shell.run(script, fileName, arguments);
         } catch (Exception ex) {
             ex.printStackTrace();
-        }
-    }
-
-    private static <T extends Enum<T>> void loadEnum(GroovyShell shell, Class<T> elementType) {
-        if (!elementType.isEnum()) {
-            return;
-        }
-
-        for (final Enum e : elementType.getEnumConstants()) {
-            shell.setProperty(e.name(), e);
-            shell.setVariable(e.name(), e);
         }
     }
 

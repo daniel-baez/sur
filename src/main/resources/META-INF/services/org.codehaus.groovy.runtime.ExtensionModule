@@ -1,6 +1,7 @@
 moduleName=sur-dsl
 moduleVersion=1.0-test
 extensionClasses=cl.daplay.sur.extensions.GetOrdersExtension,\
-  cl.daplay.sur.extensions.AmountMathExtensions,\
-  cl.daplay.sur.extensions.GetTickerExtension
+  cl.daplay.sur.extensions.AmountMathExtensions
+# cl.daplay.sur.extensions.GroovyObjectExtensions
+# cl.daplay.sur.extensions.GetTickerExtension
 #staticExtensionClasses=support.StaticStringExtension

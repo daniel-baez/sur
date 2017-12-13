@@ -16,7 +16,6 @@ public final class GetOrdersExtension {
 
     private GetOrdersExtension() {}
 
-
     public static List<Order> getOrders(final JSurbtc surbtc,
                                         final MarketID marketID,
                                         final OrderState orderState,
@@ -101,87 +100,4 @@ public final class GetOrdersExtension {
                 .collect(toList());
     }
 
-    public static List<Order> getOrders(final JSurbtc surbtc,
-                                        final String marketID,
-                                        final OrderState orderState,
-                                        final BigDecimal minimunExchanged,
-                                        final Direction direction) throws Exception {
-        final OrderType orderType = direction == Direction.BUY ? OrderType.BID : OrderType.ASK;
-
-        return surbtc.getOrders(MarketID.valueOf(marketID), orderState, minimunExchanged)
-                .stream()
-                .filter(order -> orderType == null || order.getType() == orderType)
-                .collect(toList());
-    }
-
-    public static List<Order> getOrders(final JSurbtc surbtc,
-                                        final String marketID,
-                                        final OrderState orderState,
-                                        final Direction direction) throws Exception {
-        final OrderType orderType = direction == Direction.BUY ? OrderType.BID : OrderType.ASK;
-
-        return surbtc.getOrders(MarketID.valueOf(marketID), orderState)
-                .stream()
-                .filter(order -> orderType == null || order.getType() == orderType)
-                .collect(toList());
-    }
-
-    public static List<Order> getOrders(final JSurbtc surbtc,
-                                        final String marketID,
-                                        final BigDecimal minimunExchanged,
-                                        final Direction direction) throws Exception {
-        final OrderType orderType = direction == Direction.BUY ? OrderType.BID : OrderType.ASK;
-
-        return surbtc.getOrders(MarketID.valueOf(marketID), minimunExchanged)
-                .stream()
-                .filter(order -> orderType == null || order.getType() == orderType)
-                .collect(toList());
-    }
-
-    public static List<Order> getOrders(final JSurbtc surbtc,
-                                        final String marketID,
-                                        final BigDecimal minimunExchanged) throws Exception {
-        return surbtc.getOrders(MarketID.valueOf(marketID), minimunExchanged)
-                .stream()
-                .collect(toList());
-    }
-
-    public static List<Order> getOrders(final JSurbtc surbtc,
-                                        final String marketID,
-                                        final OrderState orderState) throws Exception {
-        return surbtc.getOrders(MarketID.valueOf(marketID), orderState)
-                .stream()
-                .collect(toList());
-    }
-
-    public static List<Order> getOrders(final JSurbtc surbtc,
-                                        final String marketID,
-                                        final BigDecimal minimunExchanged,
-                                        final OrderType orderType) throws Exception {
-        return surbtc.getOrders(MarketID.valueOf(marketID), minimunExchanged)
-                .stream()
-                .filter(order -> orderType == null || order.getType() == orderType)
-                .collect(toList());
-    }
-
-    public static List<Order> getOrders(final JSurbtc surbtc,
-                                        final String marketID,
-                                        final OrderState orderState,
-                                        final OrderType orderType) throws Exception {
-        return surbtc.getOrders(MarketID.valueOf(marketID), orderState)
-                .stream()
-                .filter(order -> orderType == null || order.getType() == orderType)
-                .collect(toList());
-    }
-
-    public static List<Order> getOrders(final JSurbtc surbtc,
-                                        final String marketID,
-                                        final OrderState orderState,
-                                        final BigDecimal minimunExchanged,
-                                        final OrderType orderType) throws Exception {
-        return surbtc.getOrders(MarketID.valueOf(marketID), orderState, minimunExchanged)
-                .stream()
-                .filter(order -> orderType == null || order.getType() == orderType)
-                .collect(toList());
-    }
 }
