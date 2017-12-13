@@ -19,7 +19,8 @@ def get_all_time_balance(market) {
     return balance
 }
 
-for (market in [ETH_CLP, BTC_CLP]) {
+for (arg in args) {
+    def market = arg as MarketID
     def past = get_all_time_balance(market)
 
     def balance = surbtc.getBalance(market.baseCurrency)
