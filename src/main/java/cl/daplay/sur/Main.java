@@ -3,55 +3,59 @@ package cl.daplay.sur;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 import cl.daplay.jsurbtc.JSurbtc;
-import cl.daplay.jsurbtc.model.Currency;
-import cl.daplay.jsurbtc.model.balance.BalanceEventType;
-import cl.daplay.jsurbtc.model.market.MarketID;
-import cl.daplay.jsurbtc.model.order.OrderPriceType;
-import cl.daplay.jsurbtc.model.order.OrderState;
-import cl.daplay.jsurbtc.model.order.OrderType;
-import cl.daplay.jsurbtc.model.trades.Direction;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
 public final class Main {
 
-    private static Predicate<String> isUnsafeOption = (arg) -> {
-        return arg != null && ("-U".equals(arg) || "--unsafe".equals(arg));
-    };
+    public static void main(String[] _args) throws IOException {
+        // arguments processing
+        boolean unsafe = false;
+        String apiKey = "";
+        String apiSecret = "";
 
-    public static void main(String[] args) throws IOException {
-        // -- remove options
-        final boolean unsafe = Stream.of(args)
-            .filter(Main.isUnsafeOption)
-            .findFirst()
-            .map(it -> true)
-            .orElse(false);
+        // remaining arguments will be passed on to script
+        final List<String> args = new LinkedList<>();
 
-        if (unsafe) {
-            args = Stream.of(args)
-                .filter(Main.isUnsafeOption.negate())
-                .toArray(String[]::new);
+        // for each argument
+        for (int i = 0; i < _args.length; i++) {
+            final String arg = _args[i];
+            final String nextArgument = (i + 1) < _args.length ? _args[i + 1] : "";
+
+            if ("--api-key".equals(arg)) {
+                apiKey = nextArgument; // save next argument
+                i++; // advance index to nextArgument's
+            } else if ("--api-secret".equals(arg)) {
+                apiSecret = nextArgument;
+                i++; // advance index to nextArgument's
+            } else if ("-U".equals(arg) || "--unsafe".equals(arg)) {
+                unsafe = true;
+            } else {
+                // keep this guy for the script
+                args.add(arg);
+            }
         }
 
-        // check input
-        final InputStream input = args.length >= 1 ? new FileInputStream(args[0]) : System.in;
+        // get source of input
+        final InputStream input = args.size() >= 1 ? new FileInputStream(args.get(0)) : System.in;
         if (input.available() == 0) {
             return;
         }
 
-        final String fileName = args.length >= 1 ? args[0] : "inline script";
+        // get fileName
+        final String fileName = args.size() >= 1 ? args.get(0) : "inline script";
+
+        // remove filename from arguments
+        if (!fileName.equals("inline script")) {
+            args.remove(0);
+        }
 
         // read input
         final String script = new Scanner(input)
@@ -62,19 +66,10 @@ public final class Main {
             return;
         }
 
-        final Class<Enum>[] enums = new Class[] { ChronoUnit.class,
-            Currency.class,
-            MarketID.class,
-            OrderPriceType.class,
-            BalanceEventType.class,
-            OrderState.class,
-            OrderType.class,
-            Direction.class };
-
         // customized imports
         final ImportCustomizer customizer = new ImportCustomizer();
 
-        for (final Class clazz : enums) {
+        for (final Class clazz : Constants.LITERAL_VALUES) {
             for (final Object _member : clazz.getEnumConstants()) {
                 final Enum member = (Enum) _member;
                 customizer.addStaticImport(member.name(), clazz.getName(), member.name());
@@ -92,7 +87,7 @@ public final class Main {
         compilerConfiguration.setScriptBaseClass(SurScript.class.getName());
         compilerConfiguration.addCompilationCustomizers(customizer);
         
-        final JSurbtc surbtc = JSurbtcFactory.newInstance();
+        final JSurbtc surbtc = JSurbtcFactory.newInstance(apiKey, apiSecret);
         final Binding binding = new Binding();
 
         binding.setProperty("in", System.in);
@@ -109,15 +104,9 @@ public final class Main {
         		binding,
         		compilerConfiguration);
 
-        // process arguments that look like any of the constants
-        final List<String> arguments = new ArrayList<>(args.length);
-        for (int i = 1; i < args.length; i++) {
-            arguments.add(args[i]);
-        }
-
         // eval
         try {
-            shell.run(script, fileName, arguments);
+            shell.run(script, fileName, args);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
