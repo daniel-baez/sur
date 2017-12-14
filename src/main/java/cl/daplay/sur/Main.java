@@ -49,9 +49,6 @@ public final class Main {
         Reader input = new InputStreamReader(System.in);
         String fileName = "inline script";
 
-        // get fileName
-        // String fileName = args.size() >= 1 ? args.get(0) : "inline script";
-
         if (args.size() >= 1) {
             fileName = args.remove(0);
             input = new FileReader(fileName);
