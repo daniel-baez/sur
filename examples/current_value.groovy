@@ -37,7 +37,7 @@ def fee(x) {
 }
 
 def report(order, price) {
-    println "- Order $order.id ($order.actualAmount) was aquired for $order.totalExchanged, and now worths: ${fee(order.actualAmount * price)}"
+    println "- Order $order.id ($order.actualAmount, $order.createdAt) was aquired for $order.totalExchanged, and now worths: ${fee(price * order.actualAmount)}"
 }
 
 for (arg in args) {

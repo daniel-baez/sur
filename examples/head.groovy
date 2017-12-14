@@ -35,7 +35,8 @@ for (arg in args) {
     orders.take(n).each { o ->
         println "-   ${o.id}, marketId:${o.marketID}, type: ${o.type}, state: ${o.state}, createdAt:${o.createdAt}, "
         println "    priceType: $o.priceType, limit: $o.limit, "
-        println "    amount: $o.amount, actualAmount: $o.actualAmount, exchanged: $o.totalExchanged, rate: $o.exchangeRate "
+        println "    amount: $o.amount, actualAmount: $o.actualAmount, ";
+        println "    exchanged: $o.totalExchanged, actualExchanged: $o.actualExchanged, rate: $o.exchangeRate";
         println "    feeCurrency: ${o.feeCurrency}, paidFee: $o.paidFee, paidFeeQuoted: ${o.paidFeeQuoted} "
         println ""
     }
