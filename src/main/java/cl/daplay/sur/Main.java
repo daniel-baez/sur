@@ -1,8 +1,6 @@
 package cl.daplay.sur;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -20,6 +18,7 @@ public final class Main {
         boolean unsafe = false;
         String apiKey = "";
         String apiSecret = "";
+        String argumentScript = "";
 
         // remaining arguments will be passed on to script
         final List<String> args = new LinkedList<>();
@@ -35,6 +34,9 @@ public final class Main {
             } else if ("--api-secret".equals(arg)) {
                 apiSecret = nextArgument;
                 i++; // advance index to nextArgument's
+            } else if ("-e".equals(arg) || "--eval".equals(arg)) {
+                argumentScript = nextArgument;
+                i++; // advance index to nextArgument's
             } else if ("-U".equals(arg) || "--unsafe".equals(arg)) {
                 unsafe = true;
             } else {
@@ -44,17 +46,22 @@ public final class Main {
         }
 
         // get source of input
-        final InputStream input = args.size() >= 1 ? new FileInputStream(args.get(0)) : System.in;
-        if (input.available() == 0) {
-            return;
-        }
+        Reader input = new InputStreamReader(System.in);
+        String fileName = "inline script";
 
         // get fileName
-        final String fileName = args.size() >= 1 ? args.get(0) : "inline script";
+        // String fileName = args.size() >= 1 ? args.get(0) : "inline script";
 
-        // remove filename from arguments
-        if (!fileName.equals("inline script")) {
-            args.remove(0);
+        if (args.size() >= 1) {
+            fileName = args.remove(0);
+            input = new FileReader(fileName);
+        } else if (!argumentScript.isEmpty()) {
+            fileName = "argument script";
+            input = new StringReader(argumentScript);
+        } else {
+            if (System.in.available() == 0) {
+                System.exit(1);
+            }
         }
 
         // read input
