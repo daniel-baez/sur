@@ -11,11 +11,26 @@ import cl.daplay.jsurbtc.JSurbtc;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 
+import javax.xml.bind.SchemaOutputResolver;
+
 public final class Main {
+
+    private static final Properties VERSION;
+
+    static {
+        VERSION = new Properties();
+
+        try {
+            VERSION.load(Main.class.getResourceAsStream("/version.properties"));
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static void main(String[] _args) throws IOException {
         // arguments processing
         boolean unsafe = false;
+        boolean version = false;
         String apiKey = "";
         String apiSecret = "";
         String argumentScript = "";
@@ -39,10 +54,17 @@ public final class Main {
                 i++; // advance index to nextArgument's
             } else if ("-U".equals(arg) || "--unsafe".equals(arg)) {
                 unsafe = true;
+            } else if ("-v".equals(arg) || "--version".equals(arg)) {
+                version = true;
             } else {
                 // keep this guy for the script
                 args.add(arg);
             }
+        }
+
+        if (version) {
+            System.out.printf("version: %s%n", VERSION.getProperty("version"));
+            System.exit(0);
         }
 
         // get source of input
