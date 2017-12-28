@@ -1,25 +1,57 @@
-apply plugin: 'java'
-apply plugin: 'application'
-apply plugin: 'com.github.johnrengelman.shadow'
-
 buildscript {
     repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
         jcenter()
     }
     dependencies {
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
+        classpath 'org.ajoberstar:grgit:2.1.0'
+        classpath 'org.ajoberstar.reckon:reckon-gradle:0.3.0'
+        classpath 'com.bmuschko:gradle-nexus-plugin:2.3.1'
     }
 }
+
+ext {
+    versionPattern = /\d+\.\d+\.\d+/
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: "org.ajoberstar.grgit"
+apply plugin: "org.ajoberstar.reckon"
+apply plugin: 'com.bmuschko.nexus'
+
+group = "cl.daplay"
+description = "Surbtc made easy"
+
+mainClassName = 'cl.daplay.sur.Main'
+
+reckon {
+    normal = scopeFromProp()
+    preRelease = snapshotFromProp()
+}
+
+task generateVersionFile {
+    description = 'Generates file "version.properties".'
+
+    doLast {
+        def out = new File(project.buildDir, "resources/main/version.properties")
+
+        def props = new Properties()
+        props.setProperty('version', project.version.toString())
+
+        props.store(out.newWriter(), null)
+    }
+}
+processResources.finalizedBy generateVersionFile
 
 repositories {
     mavenCentral()
 }
 
-
 targetCompatibility = '1.8'
 sourceCompatibility = '1.8'
-
-mainClassName = 'cl.daplay.sur.Main'
 
 dependencies {
     compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.13'
@@ -27,3 +59,60 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
 }
+
+def requireReleaseVersion() {
+    // execute if not snapshot and matches \d.\d.\d
+    return !version.toString().contains("SNAPSHOT") && (version.toString() ==~ versionPattern)
+}
+
+// unused tasks by plugin Reckon
+project.tasks.remove(reckonTagCreate)
+project.tasks.remove(reckonTagPush)
+
+task release() {
+    if (!requireReleaseVersion()) {
+        throw new GradleException("task Release, won't be executed, as $version is an SNAPSHOT version");
+    }
+
+    final String releaseName = "v${version}"
+
+    doLast {
+        println "releasing: $releaseName"
+        grgit.tag.add(name: releaseName, message: releaseName, annotate: true)
+        grgit.push(refsOrSpecs: ["refs/tags/${releaseName}"])
+    }
+}
+
+release.dependsOn build
+release.finalizedBy uploadArchives
+
+modifyPom {
+    project {
+
+        name project.name
+        description project.description
+        url 'https://github.com/daplay/sur'
+
+        scm {
+            url 'https://github.com/daplay/sur'
+            connection 'scm:https://github.com/daplay/sur.git'
+            developerConnection 'scm:git://github.com/daplay/sur.git'
+        }
+
+        licenses {
+            license {
+                name 'The Apache Software License, Version 2.0'
+                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            }
+        }
+
+        developers {
+            developer {
+                id 'daplay'
+                name 'Daniel Meneses'
+                email 'daplay@gmail.com'
+            }
+        }
+    }
+}
+
