@@ -71,7 +71,8 @@ project.tasks.remove(reckonTagPush)
 
 task release() {
     if (!requireReleaseVersion()) {
-        throw new GradleException("task Release, won't be executed, as $version is an SNAPSHOT version");
+        println "task Release, won't be executed, as $version is an SNAPSHOT version"
+        return
     }
 
     final String releaseName = "v${version}"
