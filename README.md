@@ -24,6 +24,20 @@ Scripts are executed by default on "safe mode", which means that methods:
 
 will fail, to run in unsafe mode use option `-U` or `--unsafe`
 
+# Installation
+
+Currently only available for *nix
+
+```
+curl -o- https://raw.githubusercontent.com/daplay/sur/master/install.sh | bash
+```
+
+Later on, to update please use:
+
+```
+sur --update
+```
+
 ## Examples
 
 - shebang:  `#!/usr/bin/env sur -U`
