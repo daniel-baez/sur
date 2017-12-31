@@ -83,16 +83,15 @@ all_versions=$(curl -o- http://get.daplay.cl/sur.all)
 last_version=$(echo $all_versions | head -n 1)
 
 if [ "x$last_version" = "x$SUR_VERSION" ]; then
-    # nothing to do
     echo "Sur is up to date."
     exit 0
 fi
 
-curl http://get.daplay.cl/sur-$last_version.zip --output $$.zip --silent
-unzip -qo "$$.zip" -d "$SUR_HOME"
+curl http://get.daplay.cl/sur-$last_version.zip --output "sur-$last_version.zip" --silent
+unzip -qo "sur-$last_version.zip" -d "$SUR_HOME"
 rm -rf $SUR_HOME/bin $SUR_HOME/lib
-mv $SUR_HOME/sur-$last_version/* $SUR_HOME
-rm -rf $SUR_HOME/sur-$SUR_VERSION/
+mv "$SUR_HOME/sur-$last_version"/* "$SUR_HOME"/
+rm -rf $SUR_HOME/sur-$last_version/
 rm -rf $$.zip
 
 echo "Sur updated."
