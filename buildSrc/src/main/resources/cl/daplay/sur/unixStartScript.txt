@@ -161,7 +161,7 @@ if \$cygwin ; then
 fi
 
 for arg in "\$@" ; do
-    if [ "x\$arg" = "xupdate" ]; then
+    if [ "x\$arg" = "x--update" ]; then
         update=true
     fi
 done
