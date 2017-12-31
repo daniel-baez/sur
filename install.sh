@@ -2,8 +2,6 @@
 
 { # this ensures the entire script is downloaded #
 
-set -x
-
 # OS specific support (must be 'true' or 'false').
 cygwin=false;
 darwin=false;
@@ -71,12 +69,13 @@ if [ -d "$SUR_HOME" ]; then
 	echo ""
 	echo "    ${SUR_HOME}"
 	echo ""
-	echo " Please consider running the following if you need to upgrade."
-	echo ""
-	echo "    $ sur selfupdate force"
-	echo ""
-	echo "======================================================================================================"
-	echo ""
+	echo " Please remove installation to continue."
+	# echo " Please consider running the following if you need to upgrade."
+	# echo ""
+	# echo "    $ sur selfupdate force"
+	# echo ""
+	# echo "======================================================================================================"
+	# echo ""
 	exit 0
 fi
 
