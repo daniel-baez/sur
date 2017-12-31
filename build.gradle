@@ -1,3 +1,5 @@
+import org.apache.tools.ant.filters.*
+
 buildscript {
     repositories {
         maven {
@@ -32,6 +34,22 @@ reckon {
     preRelease = snapshotFromProp()
 }
 
+task copyScripts(type: Copy) {
+    description = "Copy scripts from src/main/bash to release dir /bin"
+
+    from 'src/main/bash'
+    into 'build/scripts'
+    include '**/*'
+
+    filter(ReplaceTokens, tokens: [ SUR_VERSION: project.version.toString() ])
+}
+
+startScripts {
+    unixStartScriptGenerator.template = resources.text.fromFile('buildSrc/src/main/resources/cl/daplay/sur/unixStartScript.txt')
+}
+
+startScripts.finalizedBy(copyScripts)
+
 task generateVersionFile {
     description = 'Generates file "version.properties".'
 
@@ -61,7 +79,6 @@ dependencies {
 }
 
 def requireReleaseVersion() {
-    // execute if not snapshot and matches \d.\d.\d
     return !version.toString().contains("SNAPSHOT") && (version.toString() ==~ versionPattern)
 }
 
@@ -71,7 +88,10 @@ project.tasks.remove(reckonTagPush)
 
 task release() {
     if (!requireReleaseVersion()) {
-        println "task Release, won't be executed, as $version is an SNAPSHOT version"
+        doLast {
+            println "task Release, won't be executed, as $version is an SNAPSHOT version"
+        }
+
         return
     }
 
