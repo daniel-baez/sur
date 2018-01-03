@@ -22,7 +22,7 @@ case "$(uname)" in
 esac
 
 # Global variables
-SUR_VERSION="0.1.4"
+SUR_VERSION="0.1.5"
 SUR_SERVICE="http://get.daplay.cl/"
 SUR_PLATFORM=$(uname)
 
@@ -199,7 +199,7 @@ mkdir -p "$sur_bin_folder"
 mkdir -p "$sur_tmp_folder"
 mkdir -p "$sur_archives_folder"
 
-# 1) descarga el ultimo zip a $SUR_HOME/tmp/sur-0.1.4.zip
+# 1) descarga el ultimo zip a $SUR_HOME/tmp/sur-0.1.5.zip
 echo "Download script archive..."
 curl --location --progress-bar "${SUR_SERVICE}/sur-${SUR_VERSION}.zip" > "$sur_zip_file"
 
