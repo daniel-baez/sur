@@ -228,6 +228,15 @@ fi
 
 
 echo -e "\n\n\nAll done!\n\n"
+
+echo "Please open a new terminal, or run the following in the existing one:"
+echo ""
+echo "    source \"${sur_bashrc}\""
+echo ""
+echo "Then issue the following command:"
+echo ""
+echo "    sur help"
+echo ""
 echo "Enjoy!!!"
 
 } # this ensures the entire script is downloaded #
