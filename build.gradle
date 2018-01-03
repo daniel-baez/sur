@@ -64,7 +64,7 @@ task updateInstallScript {
 
     // add, commit and push change
     doLast {
-        grgit.add(patterns: ['README.md'])
+        grgit.add(patterns: ['install.sh'])
         grgit.commit(message: "chore(install.sh) version change: '${version.toString()}'.")
         grgit.push()
     }
