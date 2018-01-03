@@ -42,19 +42,13 @@ sur_tmp_folder="${SUR_HOME}/tmp"
 sur_zip_file="${sur_tmp_folder}/sur-${SUR_VERSION}.zip"
 sur_archives_folder="${SUR_HOME}/archives"
 
-# Profile envs
-sur_bash_profile="${HOME}/.bash_profile"
-sur_profile="${HOME}/.profile"
-sur_bashrc="${HOME}/.bashrc"
-sur_zshrc="${HOME}/.zshrc"
 
 sur_init_snippet=$( cat << EOF
 #THIS MUST BE AT THE END OF THE FILE FOR Sur TO WORK!!!
 export SUR_HOME="$SUR_HOME"
-export PATH=\$PATH:$SUR_HOME/bin
+export PATH=\$PATH:\$SUR_HOME/bin
 EOF
 )
-
 
 
 # Sanity checks
@@ -149,6 +143,54 @@ fi
 
 echo "Installing Sur scripts..."
 
+nvm_try_profile() {
+  if [ -z "${1-}" ] || [ ! -f "${1}" ]; then
+    return 1
+  fi
+  echo "${1}"
+}
+
+#
+# Detect profile file if not specified as environment variable
+# (eg: PROFILE=~/.myprofile)
+# The echo'ed path is guaranteed to be an existing file
+# Otherwise, an empty string is returned
+#
+nvm_detect_profile() {
+  if [ -n "${PROFILE}" ] && [ -f "${PROFILE}" ]; then
+    echo "${PROFILE}"
+    return
+  fi
+
+  local DETECTED_PROFILE
+  DETECTED_PROFILE=''
+  local SHELLTYPE
+  SHELLTYPE="$(basename "/$SHELL")"
+
+  if [ "$SHELLTYPE" = "bash" ]; then
+    if [ -f "$HOME/.bashrc" ]; then
+      DETECTED_PROFILE="$HOME/.bashrc"
+    elif [ -f "$HOME/.bash_profile" ]; then
+      DETECTED_PROFILE="$HOME/.bash_profile"
+    fi
+  elif [ "$SHELLTYPE" = "zsh" ]; then
+    DETECTED_PROFILE="$HOME/.zshrc"
+  fi
+
+  if [ -z "$DETECTED_PROFILE" ]; then
+    for EACH_PROFILE in ".profile" ".bashrc" ".bash_profile" ".zshrc"
+    do
+      if DETECTED_PROFILE="$(nvm_try_profile "${HOME}/${EACH_PROFILE}")"; then
+        break
+      fi
+    done
+  fi
+
+  if [ ! -z "$DETECTED_PROFILE" ]; then
+    echo "$DETECTED_PROFILE"
+  fi
+}
+
 
 # Create directory structure
 
@@ -175,28 +217,17 @@ rm -rf $SUR_HOME/bin $SUR_HOME/lib
 mv $SUR_HOME/sur-$SUR_VERSION/* $SUR_HOME
 rm -rf $SUR_HOME/sur-$SUR_VERSION/
 
-echo "Attempt update of interactive bash profile..."
-touch "${sur_bashrc}"
+echo "Attempt update of interactive shell profile..."
+# Profile envs
+sur_bashrc=$(nvm_detect_profile)
 if [[ -z $(grep SUR_HOME "$sur_bashrc") ]]; then
     echo -e "\n$sur_init_snippet" >> "$sur_bashrc"
     echo "Added sur init snippet to $sur_bashrc"
+    \. "$sur_bashrc"
 fi
 
-echo "Attempt update of zsh profile..."
-touch "$sur_zshrc"
-if [[ -z $(grep SUR_HOME "$sur_zshrc") ]]; then
-    echo -e "\n$sur_init_snippet" >> "$sur_zshrc"
-    echo "Updated existing ${sur_zshrc}"
-fi
 
 echo -e "\n\n\nAll done!\n\n"
-
-echo "Please open a new terminal:"
-echo ""
-echo "Then issue the following command:"
-echo ""
-echo "    sur help"
-echo ""
 echo "Enjoy!!!"
 
 } # this ensures the entire script is downloaded #
