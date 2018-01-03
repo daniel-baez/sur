@@ -44,6 +44,32 @@ task copyScripts(type: Copy) {
     filter(ReplaceTokens, tokens: [ SUR_VERSION: project.version.toString() ])
 }
 
+task updateInstallScript {
+    description = 'Updates version in install.sh'
+
+    if (!requireReleaseVersion()) {
+        doLast {
+            println "task ${this.name}, won't be executed, as $version is an SNAPSHOT version"
+        }
+
+        return
+    }
+
+    // replace text in README.md
+    doLast {
+        def file = new File(project.projectDir, "install.sh");
+        def text = file.text;
+        file.text = text.replaceAll versionPattern, version.toString()
+    }
+
+    // add, commit and push change
+    doLast {
+        grgit.add(patterns: ['README.md'])
+        grgit.commit(message: "chore(install.sh) version change: '${version.toString()}'.")
+        grgit.push()
+    }
+}
+
 startScripts {
     unixStartScriptGenerator.template = resources.text.fromFile('buildSrc/src/main/resources/cl/daplay/sur/unixStartScript.txt')
 }
@@ -105,6 +131,7 @@ task release() {
 }
 
 release.dependsOn build
+release.finalizedBy updateInstallScript
 release.finalizedBy uploadArchives
 
 modifyPom {

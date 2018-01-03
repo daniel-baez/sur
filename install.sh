@@ -22,7 +22,7 @@ case "$(uname)" in
 esac
 
 # Global variables
-SUR_VERSION="0.1.0"
+SUR_VERSION="0.1.3"
 SUR_SERVICE="http://get.daplay.cl/"
 SUR_PLATFORM=$(uname)
 
@@ -192,8 +192,6 @@ fi
 echo -e "\n\n\nAll done!\n\n"
 
 echo "Please open a new terminal:"
-echo ""
-echo "    source \"$$HOME}/\""
 echo ""
 echo "Then issue the following command:"
 echo ""
